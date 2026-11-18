@@ -21,6 +21,12 @@ function zInterpret(z: number): string {
   return "低値（−2 SD 未満）：身長に比べ腕が短い";
 }
 
+const CUTOFFS = [
+  { value: 0.96, dir: "below" as const, label: "軟骨無形成症", note: "日本の診断基準（指極/身長 < 0.96）" },
+  { value: 0.965, dir: "below" as const, label: "SHOX異常症", note: "Rappold 2007 のスコア項目（欧州、< 0.965）" },
+  { value: 1.05, dir: "above" as const, label: "Marfan症候群", note: "改訂Ghent基準（成人、> 1.05）" },
+];
+
 const inputCls =
   "w-full rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500";
 
@@ -179,6 +185,44 @@ export default function Home() {
               </div>
             )}
 
+            {age !== null && !outOfRange && (() => {
+              const { L, M, S } = getLMS(sex, age);
+              return (
+                <div className="mb-3 rounded-xl border border-slate-200 dark:border-slate-700 px-4 py-3">
+                  <p className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-2">
+                    固定のカットオフは、この年齢・性別では何 SD か
+                  </p>
+                  <table className="w-full text-xs">
+                    <tbody>
+                      {CUTOFFS.map((c) => {
+                        const z = calcZScore(c.value, L, M, S);
+                        const hit =
+                          result.ratio !== null &&
+                          (c.dir === "below" ? result.ratio < c.value : result.ratio > c.value);
+                        return (
+                          <tr key={c.value} className="border-t border-slate-100 dark:border-slate-700 first:border-0">
+                            <td className="py-1.5 pr-2 font-mono text-slate-700 dark:text-slate-200 whitespace-nowrap">
+                              {c.dir === "below" ? "<" : ">"} {c.value}
+                            </td>
+                            <td className="py-1.5 pr-2 text-slate-600 dark:text-slate-300">
+                              {c.label}
+                              <span className="block text-slate-400 dark:text-slate-500">{c.note}</span>
+                            </td>
+                            <td className="py-1.5 pr-2 text-right font-mono tabular-nums text-slate-600 dark:text-slate-300 whitespace-nowrap">
+                              {z >= 0 ? "+" : ""}{z.toFixed(2)} SD
+                            </td>
+                            <td className="py-1.5 text-right whitespace-nowrap">
+                              {hit && <span className="text-orange-500 dark:text-orange-400 font-medium">該当</span>}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              );
+            })()}
+
             <AsrChart sex={sex} ageYears={age} ratio={result.ratio} zScore={result.z} />
 
             <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-700 space-y-1">
@@ -187,7 +231,7 @@ export default function Home() {
                 −2 SD 未満は四肢が短い不均衡（SHOX異常症・軟骨無形成症など）、+2 SD 超は四肢が長い体型（Marfan症候群・類宦官体型）を考える。
               </p>
               <p className="text-xs text-slate-400 dark:text-slate-500">
-                欧米の固定値は日本人に合わない：SHOX異常症の 0.965 は 10 歳で約 −1 SD、Marfan症候群の 1.05 は 10 歳で男子 +2.7 SD・女子 +3.0 SD にあたる（Hirano 2025）。
+                固定のカットオフは年齢によって SD が変わるので、SDS と併せて判断する。日本人は欧州の子どもより比が小さく、Marfan症候群の 1.05 は15歳未満と女子では満たしにくい（Hirano 2025）。
               </p>
               <p className="text-xs text-slate-400 dark:text-slate-500">
                 6 歳未満・18 歳超は日本人の基準がないため計算しない。

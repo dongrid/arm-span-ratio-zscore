@@ -58,7 +58,7 @@ export default function AppShell({
         <p className="leading-relaxed">
           基準：Hirano Y, Inokuchi M, Narumi S, Hasegawa T. Reference values of arm span and arm span to
           height ratio of Japanese population in childhood and adolescence.{" "}
-          <em>Am J Hum Biol</em> 2025;37(4):e70051.（1992〜1994年の全国人体寸法調査、LMS法。Table 3 の L, M, S を年齢で線形補間）
+          <em>Am J Hum Biol</em> 2025;37(4):e70051.（1992〜1994年の全国人体寸法調査、LMS法。Table 3 の L, M, S を、表の値との差が丸めの範囲〔±0.0005〕に収まるよう平滑化して使用）
         </p>
       </footer>
     </div>
